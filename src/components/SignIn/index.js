@@ -6,14 +6,17 @@ import { withRouter } from 'react-router-dom'
 import * as ROUTES from '../../constants/routes'
 import { withFirebase } from '../Firebase'
 import { SignUpLink } from '../SignUp'
+import { PasswordForgetLink } from '../PasswordForget'
 
 const SignInPage = () => (
   <div>
     <h1>SignIn</h1>
     <SignInForm />
+    <PasswordForgetLink />
     <SignUpLink />
   </div>
 )
+
 const INITIAL_STATE = {
   email: '',
   password: '',
