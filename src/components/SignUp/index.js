@@ -2,15 +2,13 @@ import React, { Component } from 'react'
 import { Link, withRouter } from 'react-router-dom'
 
 import * as ROUTES from '../../constants/routes'
-import { FirebaseContext } from '../Firebase'
+//import { FirebaseContext } from '../Firebase'
 import { withFirebase } from '../Firebase'
 
 const SignUpPage = () => (
   <div>
     <h1>SignUp</h1>
-    <FirebaseContext.Consumer>
-      {(firebase) => <SignUpForm firebase={firebase} />}
-    </FirebaseContext.Consumer>
+    <SignUpForm />
   </div>
 )
 class SignUpFormBase extends Component {
