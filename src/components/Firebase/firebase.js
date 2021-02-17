@@ -3,13 +3,14 @@ import app from 'firebase/app'
 import 'firebase/auth'
 
 const config = {
-  apiKey: 'AIzaSyDmtXXvYQS7lf2N9Ak7TwIpMm07j__P9zk',
-  authDomain: 'react-firebase-2e8be.firebaseapp.com',
-  projectId: 'react-firebase-2e8be',
-  storageBucket: 'react-firebase-2e8be.appspot.com',
-  messagingSenderId: '897168354322',
-  appId: '1:897168354322:web:e39b8120b4a5a5e12f3ccb',
-  measurementId: 'G-8EPSSJG3B7',
+  apiKey: process.env.REACT_APP_API_KEY,
+  authDomain: process.env.REACT_APP_AUTH_DOMAIN,
+  databaseURL: process.env.REACT_APP_DATABASE_URL,
+  projectId: process.env.REACT_APP_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_STORAGE_BUCKET,
+  appId: process.env.REACT_APP_APP_ID,
+  messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID,
+  measurementId: process.env.REACT_APP_MEASUREMENT_ID,
 }
 // Initialize Firebase
 
