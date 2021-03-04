@@ -26,16 +26,6 @@ class MessagesBase extends Component {
       text: event.target.value,
     })
   }
-  onCreateMessage = (event, authUser) => {
-    this.props.firebase.messages().push({
-      text: this.state.text,
-      userId: authUser.uid,
-    })
-    this.setState({
-      text: '',
-    })
-    event.preventDefault()
-  }
 
   componentDidMount() {
     this.setState({ loading: true })
@@ -57,41 +47,68 @@ class MessagesBase extends Component {
   componentWillUnmount() {
     this.props.firebase.messages().off()
   }
+
+  onCreateMessage = (event, authUser) => {
+    this.props.firebase.messages().push({
+      text: this.state.text,
+      userId: authUser.uid,
+    })
+    this.setState({
+      text: '',
+    })
+    event.preventDefault()
+  }
+  onRemoveMessage = (uid) => {
+    this.props.firebase.message(uid).remove()
+  }
+
+  onEditMessage = () => {
+    //...
+    };
   render() {
     const { text, messages, loading } = this.state
     return (
-        <AuthUserContext.Consumer>
-        {authUser => (
-        <div>
+      <AuthUserContext.Consumer>
+        {(authUser) => (
+          <div>
             {loading && <div>Loading ...</div>}
             {messages ? (
-            <MessageList messages={messages} />
+              <MessageList
+                messages={messages}
+                onRemoveMessage={this.onRemoveMessage}
+                onEditMessage={this.onEditMessage}
+              />
             ) : (
-            <div>There are no messages ...</div>
+              <div>There are no messages ...</div>
             )}
-            <form onSubmit={event => this.onCreateMessage(event, authUser)}>
-            <input
-                type='text'
-                value={text}
-                onChange={this.onChangeText} />
-            <button type='submit'>Send</button>
+            <form onSubmit={(event) => this.onCreateMessage(event, authUser)}>
+              <input type='text' value={text} onChange={this.onChangeText} />
+              <button type='submit'>Send</button>
             </form>
-        </div>
-      )}
-</AuthUserContext.Consumer>
+          </div>
+        )}
+      </AuthUserContext.Consumer>
     )
   }
 }
-const MessageList = ({ messages }) => (
+const MessageList = ({ messages, onEditMessage, onRemoveMessage, }) => (
   <ul>
     {messages.map((message) => (
-      <MessageItem key={message.uid} message={message} />
+      <MessageItem
+        key={message.uid}
+        message={message}
+        onEditMessage={onEditMessage}
+        onRemoveMessage={onRemoveMessage}
+      />
     ))}
   </ul>
 )
-const MessageItem = ({ message }) => (
+const MessageItem = ({ message, onRemoveMessage }) => (
   <li>
     <strong>{message.userId}</strong> {message.text}
+    <button type='button' onClick={() => onRemoveMessage(message.uid)}>
+      Delete
+    </button>
   </li>
 )
 const Messages = withFirebase(MessagesBase)
