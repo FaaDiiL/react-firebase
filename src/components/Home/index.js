@@ -20,13 +20,6 @@ class MessagesBase extends Component {
       messages: [],
     }
   }
-
-  onChangeText = (event) => {
-    this.setState({
-      text: event.target.value,
-    })
-  }
-
   componentDidMount() {
     this.setState({ loading: true })
     this.props.firebase.messages().on('value', (snapshot) => {
@@ -37,34 +30,45 @@ class MessagesBase extends Component {
           ...messageObject[key],
           uid: key,
         }))
+
         this.setState({ messages: messageList, loading: false })
       } else {
         this.setState({ messages: null, loading: false })
       }
-      this.setState({ loading: false })
     })
   }
+
   componentWillUnmount() {
     this.props.firebase.messages().off()
+  }
+
+  onChangeText = (event) => {
+    this.setState({ text: event.target.value })
   }
 
   onCreateMessage = (event, authUser) => {
     this.props.firebase.messages().push({
       text: this.state.text,
       userId: authUser.uid,
+      createdAt: this.props.firebase.serverValue.TIMESTAMP,
     })
-    this.setState({
-      text: '',
-    })
+    this.setState({ text: '' })
     event.preventDefault()
   }
+
   onRemoveMessage = (uid) => {
     this.props.firebase.message(uid).remove()
   }
 
-  onEditMessage = () => {
-    //...
-    };
+  onEditMessage = (message, text) => {
+    const { uid, ...messageSnapshot } = message
+    this.props.firebase.message(message.uid).set({
+      ...messageSnapshot,
+      text,
+      editedAt: this.props.firebase.serverValue.TIMESTAMP,
+    })
+  }
+
   render() {
     const { text, messages, loading } = this.state
     return (
@@ -75,8 +79,8 @@ class MessagesBase extends Component {
             {messages ? (
               <MessageList
                 messages={messages}
-                onRemoveMessage={this.onRemoveMessage}
                 onEditMessage={this.onEditMessage}
+                onRemoveMessage={this.onRemoveMessage}
               />
             ) : (
               <div>There are no messages ...</div>
@@ -91,7 +95,8 @@ class MessagesBase extends Component {
     )
   }
 }
-const MessageList = ({ messages, onEditMessage, onRemoveMessage, }) => (
+
+const MessageList = ({ messages, onEditMessage, onRemoveMessage }) => (
   <ul>
     {messages.map((message) => (
       <MessageItem
@@ -103,16 +108,66 @@ const MessageList = ({ messages, onEditMessage, onRemoveMessage, }) => (
     ))}
   </ul>
 )
-const MessageItem = ({ message, onRemoveMessage }) => (
-  <li>
-    <strong>{message.userId}</strong> {message.text}
-    <button type='button' onClick={() => onRemoveMessage(message.uid)}>
-      Delete
-    </button>
-  </li>
-)
-const Messages = withFirebase(MessagesBase)
+
+class MessageItem extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      editMode: false,
+      editText: this.props.message.text,
+    }
+  }
+  onToggleEditMode = () => {
+    this.setState((state) => ({
+      editMode: !state.editMode,
+      editText: this.props.message.text,
+    }))
+  }
+
+  onChangeEditText = (event) => {
+    this.setState({ editText: event.target.value })
+  }
+
+  onSaveEditText = () => {
+    this.props.onEditMessage(this.props.message, this.state.editText)
+    this.setState({ editMode: false })
+  }
+
+  render() {
+    const { message, onRemoveMessage } = this.props
+    const { editMode, editText } = this.state
+    return (
+      <li>
+        {editMode ? (
+          <input
+            type='text'
+            value={editText}
+            onChange={this.onChangeEditText}
+          />
+        ) : (
+          <span>
+            <strong>{message.userId}</strong> {message.text}
+          </span>
+        )}
+        {message.editedAt && <span>(Edited)</span>}
+
+        {editMode ? (
+          <span>
+            <button onClick={this.onSaveEditText}>Save</button>
+            <button onClick={this.onToggleEditMode}>Reset</button>
+          </span>
+        ) : (
+          <button onClick={this.onToggleEditMode}>Edit</button>
+        )}
+        <button type='button' onClick={() => onRemoveMessage(message.uid)}>
+          Delete
+        </button>
+      </li>
+    )
+  }
+}
 
 const condition = (authUser) => !!authUser
+const Messages = withFirebase(MessagesBase)
 
 export default withAuthorization(condition)(HomePage)
