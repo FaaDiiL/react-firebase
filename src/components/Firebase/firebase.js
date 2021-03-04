@@ -1,4 +1,5 @@
 import app from 'firebase/app';
+
 import 'firebase/auth';
 import 'firebase/database';
 
@@ -64,6 +65,16 @@ class Firebase {
     user = uid => this.db.ref(`users/${uid}`);
 
     users = () => this.db.ref('users');
+    
+    // *** Message API ***
+    message = uid => this.db.ref(`messages/${uid}`);
+
+    messages = () => this.db.ref('messages');
+
+    // *** Setting API ***
+    setting = uid => this.db.ref(`setting/${uid}`);
+    settings = () => this.db.ref('settings');
+
 }
 export default Firebase;
 
