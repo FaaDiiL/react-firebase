@@ -78,6 +78,7 @@ class MessagesBase extends Component {
             {loading && <div>Loading ...</div>}
             {messages ? (
               <MessageList
+                authUser={authUser}
                 messages={messages}
                 onEditMessage={this.onEditMessage}
                 onRemoveMessage={this.onRemoveMessage}
@@ -96,10 +97,11 @@ class MessagesBase extends Component {
   }
 }
 
-const MessageList = ({ messages, onEditMessage, onRemoveMessage }) => (
+const MessageList = ({ authUser, messages, onEditMessage, onRemoveMessage }) => (
   <ul>
     {messages.map((message) => (
       <MessageItem
+        authUser={authUser}
         key={message.uid}
         message={message}
         onEditMessage={onEditMessage}
@@ -134,10 +136,11 @@ class MessageItem extends Component {
   }
 
   render() {
-    const { message, onRemoveMessage } = this.props
+    const { authUser, message, onRemoveMessage } = this.props
     const { editMode, editText } = this.state
     return (
       <li>
+     
         {editMode ? (
           <input
             type='text'
@@ -150,7 +153,8 @@ class MessageItem extends Component {
           </span>
         )}
         {message.editedAt && <span>(Edited)</span>}
-
+      {authUser.uid === message.userId && (
+      <span>
         {editMode ? (
           <span>
             <button onClick={this.onSaveEditText}>Save</button>
@@ -162,6 +166,8 @@ class MessageItem extends Component {
         <button type='button' onClick={() => onRemoveMessage(message.uid)}>
           Delete
         </button>
+        </span>
+      )}
       </li>
     )
   }
