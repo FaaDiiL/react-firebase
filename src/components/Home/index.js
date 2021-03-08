@@ -18,11 +18,20 @@ class MessagesBase extends Component {
       text: '',
       loading: false,
       messages: [],
+      limit: 5,
     }
   }
   componentDidMount() {
+    this.onListenForMessages();
+  }
+
+  onListenForMessages(){
     this.setState({ loading: true })
-    this.props.firebase.messages().on('value', (snapshot) => {
+
+    this.props.firebase
+    .messages()
+    .limitToLast(this.state.limit)
+    .on('value', (snapshot) => {
       const messageObject = snapshot.val()
       if (messageObject) {
         // convert messages list from snapshot
@@ -37,7 +46,6 @@ class MessagesBase extends Component {
       }
     })
   }
-
   componentWillUnmount() {
     this.props.firebase.messages().off()
   }
@@ -69,12 +77,24 @@ class MessagesBase extends Component {
     })
   }
 
+  onNextPage = () => {
+    this.setState(
+      state => ({ limit: state.limit + 5 }),
+      this.onListenForMessages,
+    );
+  };
+
   render() {
     const { text, messages, loading } = this.state
     return (
       <AuthUserContext.Consumer>
         {(authUser) => (
           <div>
+            {!loading && messages && (
+              <button type="button" onClick={this.onNextPage}>
+              More
+              </button>
+            )}
             {loading && <div>Loading ...</div>}
             {messages ? (
               <MessageList
